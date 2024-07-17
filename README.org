@@ -1,0 +1,44 @@
+#+title: log.h
+#+options: toc:nil
+#+startup: showeverything
+#+author: 8dcc
+
+*Personal single-header logging library.*
+
+#+TOC: headlines 2
+
+* Description
+
+This simple library consists of a main =log_write= function, and the following
+wrappers:
+
+1. =log_dbg=
+2. =log_inf=
+3. =log_wrn=
+4. =log_err=
+5. =log_ftl=
+
+All the wrappers take a variable list of arguments that must be valid for
+=printf=.
+
+The =log_write= function prints the following information:
+
+1. If =LOG_DATE= is defined, the current year, month and day.
+2. The current hour, minute and second.
+3. A tag, determined by the wrapper used. If =LOG_COLOR= is defined, a different
+   color will be used depending on the tag.
+4. The current function name. If =LOG_COLOR= is defined, the ASCII escape sequence
+   =LOG_COLOR_DIM= will be used.
+5. The user format string that was passed to the wrapper.
+
+* Building the example
+
+To try the example, simply clone the repository, compile it, and run
+=log-test.out=. Please see [[https://github.com/8dcc/libsigscan/blob/main/src/main.c][src/main.c]] for an example on how to use it.
+
+#+begin_src console
+$ git clone https://github.com/8dcc/log.h
+$ cd log.h
+$ make
+$ ./log-test.out
+#+end_src

@@ -3,7 +3,7 @@ CC=gcc
 CFLAGS=-std=c99 -Wall -Wextra -Wpedantic
 LDFLAGS=
 
-BIN=log_test.out
+BIN=log-test.out
 
 #-------------------------------------------------------------------------------
 

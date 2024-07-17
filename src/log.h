@@ -40,7 +40,9 @@ static const char* log_colors[LOG_TAGS] = { [LOG_TAG_DBG] = "\x1b[32m",
                                             [LOG_TAG_ERR] = "\x1b[1;31m",
                                             [LOG_TAG_FTL] = "\x1b[1;31m" };
 #define LOG_COLOR_RESET "\x1b[0m"
-#define LOG_COLOR_DIM   "\x1b[37m"
+#ifndef LOG_COLOR_DIM
+#define LOG_COLOR_DIM "\x1b[37m"
+#endif /* LOG_COLOR_DIM */
 #endif /* LOG_COLOR */
 
 /*----------------------------------------------------------------------------*/

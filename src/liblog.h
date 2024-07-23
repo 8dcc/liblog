@@ -17,13 +17,13 @@
  * this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef LOG_H_
-#define LOG_H_ 1
+#ifndef LIBLOG_H_
+#define LIBLOG_H_ 1
 
 #include <stdio.h>
 
 /*----------------------------------------------------------------------------*/
-/* Setting macros */
+/* Settings */
 
 /* Default FILE* when logging */
 #ifndef LOG_FP
@@ -32,6 +32,12 @@
 
 /* NOTE: Comment to disable ASCII colors when logging */
 #define LOG_COLOR
+
+/* NOTE: Comment to disable logging features */
+/* #define LOG_DATE */
+#define LOG_TIME
+#define LOG_TAG
+#define LOG_FUNC
 
 /*----------------------------------------------------------------------------*/
 /* Enums */
@@ -57,4 +63,4 @@ void log_write(enum ELogTag tag, const char* func, const char* fmt, ...);
 #define log_err(...) log_write(LOG_TAG_ERR, __func__, __VA_ARGS__)
 #define log_ftl(...) log_write(LOG_TAG_FTL, __func__, __VA_ARGS__)
 
-#endif /* LOG_H_ */
+#endif /* LIBLOG_H_ */

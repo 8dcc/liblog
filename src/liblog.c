@@ -24,6 +24,14 @@
 /* NOTE: Remember to change the path if you move the header */
 #include "liblog.h"
 
+/*----------------------------------------------------------------------------*/
+/* Private macros */
+
+#define IGNORE_UNUSED(VAR) (void)(VAR)
+
+/*----------------------------------------------------------------------------*/
+/* Private variables */
+
 static const char* log_tags[LOG_TAGS] = { [LOG_TAG_DBG] = "DEBUG",
                                           [LOG_TAG_INF] = "INFO ",
                                           [LOG_TAG_WRN] = "WARN ",
@@ -42,38 +50,70 @@ static const char* log_colors[LOG_TAGS] = { [LOG_TAG_DBG] = "\x1b[32m",
                                             [LOG_TAG_WRN] = "\x1b[33m",
                                             [LOG_TAG_ERR] = "\x1b[1;31m",
                                             [LOG_TAG_FTL] = "\x1b[1;31m" };
+#else
+#define LOG_COLOR_RESET ""
+#define LOG_COLOR_DIM   ""
+static const char* log_colors[LOG_TAGS] = { [LOG_TAG_DBG] = "",
+                                            [LOG_TAG_INF] = "",
+                                            [LOG_TAG_WRN] = "",
+                                            [LOG_TAG_ERR] = "",
+                                            [LOG_TAG_FTL] = "" };
 #endif /* LOG_COLOR */
 
 /*----------------------------------------------------------------------------*/
+/* Private functions */
 
-void log_write(enum ELogTag tag, const char* func, const char* fmt, ...) {
+static void log_write_fp(FILE* fp, enum ELogTag tag, const char* func,
+                         const char* fmt, va_list va) {
     time_t now;
     struct tm* tm;
+
+    /* Avoid -Wunused-variable */
+    IGNORE_UNUSED(log_tags);
+    IGNORE_UNUSED(log_colors);
+    IGNORE_UNUSED(tag);
+    IGNORE_UNUSED(func);
+    IGNORE_UNUSED(now);
+    IGNORE_UNUSED(tm);
 
     time(&now);
     tm = localtime(&now);
 
 #ifdef LOG_DATE
-    fprintf(LOG_FP, "%04d-%02d-%02d ", 1900 + tm->tm_year, tm->tm_mon,
-            tm->tm_mday);
+    /* Draw the date */
+    fprintf(fp, "%04d-%02d-%02d ", 1900 + tm->tm_year, tm->tm_mon, tm->tm_mday);
 #endif
 
-    fprintf(LOG_FP, "%02d:%02d:%02d", tm->tm_hour, tm->tm_min, tm->tm_sec);
-
-#ifdef LOG_COLOR
-    fprintf(LOG_FP, "%s %s%s%s %s%s:%s ", LOG_COLOR_RESET, log_colors[tag],
-            log_tags[tag], LOG_COLOR_RESET, LOG_COLOR_DIM, func,
-            LOG_COLOR_RESET);
-#else
-    fprintf(LOG_FP, " %s %s: ", log_tags[tag], func);
+#ifdef LOG_TIME
+    /* Draw the time */
+    fprintf(fp, "%02d:%02d:%02d ", tm->tm_hour, tm->tm_min, tm->tm_sec);
 #endif
 
+#ifdef LOG_TAG
+    /* Draw the tag (ERROR, WARNING, etc.) */
+    fprintf(fp, "%s%s%s ", log_colors[tag], log_tags[tag], LOG_COLOR_RESET);
+#endif
+
+#ifdef LOG_FUNC
+    /* Draw the function name */
+    fprintf(fp, "%s%s:%s ", LOG_COLOR_DIM, func, LOG_COLOR_RESET);
+#endif
+
+    /* Draw the user message */
+    vfprintf(fp, fmt, va);
+    fputc('\n', fp);
+    fflush(fp);
+}
+
+/*----------------------------------------------------------------------------*/
+/* Public functions */
+
+void log_write(enum ELogTag tag, const char* func, const char* fmt, ...) {
     va_list va;
     va_start(va, fmt);
 
-    vfprintf(LOG_FP, fmt, va);
-    fputc('\n', LOG_FP);
-    fflush(LOG_FP);
+    /* TODO: Iterate private list of FILE pointers */
+    log_write_fp(LOG_FP, tag, func, fmt, va);
 
     va_end(va);
 }

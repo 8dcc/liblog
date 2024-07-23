@@ -30,7 +30,7 @@
 #define LOG_FP stderr
 #endif
 
-/* NOTE: Uncomment to enable ASCII colors when logging */
+/* NOTE: Comment to disable ASCII colors when logging */
 #define LOG_COLOR
 
 /*----------------------------------------------------------------------------*/

@@ -4,7 +4,7 @@
 #include <time.h>
 
 /* NOTE: Remember to change the path if you move the header */
-#include "log.h"
+#include "liblog.h"
 
 static const char* log_tags[LOG_TAGS] = { [LOG_TAG_DBG] = "DEBUG",
                                           [LOG_TAG_INF] = "INFO ",

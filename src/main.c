@@ -1,6 +1,6 @@
 
 #include <stdio.h>
-#include "log.h"
+#include "liblog.h"
 
 static void my_func(void) {
     log_dbg("Reached the desired point...");

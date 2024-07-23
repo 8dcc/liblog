@@ -21,18 +21,21 @@ and the following wrappers:
 These macros, defined in [[file:src/liblog.h][liblog.h]], take a variable list of arguments (hence the
 C99 requirement) that must be valid for =printf=.
 
-The =log_write= function prints the following information:
+This library is very modular, and you can enable the features you want by
+defining only the macros you need. The =log_write= function prints the following
+information:
 
 1. If =LOG_DATE= is defined, the current year, month and day.
-2. The current hour, minute and second.
-3. A tag, determined by the wrapper used. If =LOG_COLOR= is defined, a different
-   color will be used depending on the tag.
-4. The current function name. If =LOG_COLOR= is defined, the ASCII escape sequence
-   =LOG_COLOR_DIM= will be used.
+2. If =LOG_TIME= is defined, the current hour, minute and second.
+3. If =LOG_TAG= is defined, a tag determined by the wrapper used.
+4. If =LOG_FUNC= is defined, the current function name.
 5. The user format string that was passed to the wrapper.
 
-These macros should be defined in the =log.h= header, or by calling the compiler
-with =-D...= arguments.
+In addition to these content-related macros, =LOG_COLOR= can be defined to enable
+ASCII color escape sequences when printing.
+
+These =LOG_= macros should be defined in the =log.h= header, or by calling the
+compiler with =-D...= arguments.
 
 * Building the example
 

@@ -1,7 +1,5 @@
 
 #include <stdio.h>
-
-#define LOG_COLOR
 #include "log.h"
 
 static void my_func(void) {

@@ -32,32 +32,33 @@
 /*----------------------------------------------------------------------------*/
 /* Private variables */
 
-static const char* log_tags[LOG_TAGS] = { [LOG_TAG_DBG] = "DEBUG",
-                                          [LOG_TAG_INF] = "INFO ",
-                                          [LOG_TAG_WRN] = "WARN ",
-                                          [LOG_TAG_ERR] = "ERROR",
-                                          [LOG_TAG_FTL] = "FATAL" };
+/*
+ * List of tag names, used when 'LOG_TAG_NAME' is defined.
+ */
+static const char* g_log_tag_names[] = { [LOG_TAG_DBG] = "DEBUG",
+                                         [LOG_TAG_INF] = "INFO ",
+                                         [LOG_TAG_WRN] = "WARN ",
+                                         [LOG_TAG_ERR] = "ERROR",
+                                         [LOG_TAG_FTL] = "FATAL" };
 
 #ifdef LOG_COLOR
 #define LOG_COLOR_RESET "\x1b[0m"
-
 #ifndef LOG_COLOR_DIM
 #define LOG_COLOR_DIM "\x1b[37m"
 #endif /* LOG_COLOR_DIM */
-
-static const char* log_colors[LOG_TAGS] = { [LOG_TAG_DBG] = "\x1b[32m",
-                                            [LOG_TAG_INF] = "\x1b[36m",
-                                            [LOG_TAG_WRN] = "\x1b[33m",
-                                            [LOG_TAG_ERR] = "\x1b[1;31m",
-                                            [LOG_TAG_FTL] = "\x1b[1;31m" };
-#else
+static const char* g_log_colors[] = { [LOG_TAG_DBG] = "\x1b[32m",
+                                      [LOG_TAG_INF] = "\x1b[36m",
+                                      [LOG_TAG_WRN] = "\x1b[33m",
+                                      [LOG_TAG_ERR] = "\x1b[1;31m",
+                                      [LOG_TAG_FTL] = "\x1b[1;31m" };
+#else /* !LOG_COLOR */
 #define LOG_COLOR_RESET ""
 #define LOG_COLOR_DIM   ""
-static const char* log_colors[LOG_TAGS] = { [LOG_TAG_DBG] = "",
-                                            [LOG_TAG_INF] = "",
-                                            [LOG_TAG_WRN] = "",
-                                            [LOG_TAG_ERR] = "",
-                                            [LOG_TAG_FTL] = "" };
+static const char* g_log_colors[] = { [LOG_TAG_DBG] = "",
+                                      [LOG_TAG_INF] = "",
+                                      [LOG_TAG_WRN] = "",
+                                      [LOG_TAG_ERR] = "",
+                                      [LOG_TAG_FTL] = "" };
 #endif /* LOG_COLOR */
 
 /*----------------------------------------------------------------------------*/
@@ -69,8 +70,8 @@ static void log_write_fp(FILE* fp, enum ELogTag tag, const char* func,
     struct tm* tm;
 
     /* Avoid -Wunused-variable */
-    IGNORE_UNUSED(log_tags);
-    IGNORE_UNUSED(log_colors);
+    IGNORE_UNUSED(g_log_tag_names);
+    IGNORE_UNUSED(g_log_colors);
     IGNORE_UNUSED(tag);
     IGNORE_UNUSED(func);
     IGNORE_UNUSED(now);
@@ -89,9 +90,13 @@ static void log_write_fp(FILE* fp, enum ELogTag tag, const char* func,
     fprintf(fp, "%02d:%02d:%02d ", tm->tm_hour, tm->tm_min, tm->tm_sec);
 #endif
 
-#ifdef LOG_TAG
-    /* Draw the tag (ERROR, WARNING, etc.) */
-    fprintf(fp, "%s%s%s ", log_colors[tag], log_tags[tag], LOG_COLOR_RESET);
+#ifdef LOG_TAG_NAME
+    /* Draw the tag name (ERROR, WARNING, etc.) */
+    fprintf(fp,
+            "%s%s%s ",
+            g_log_colors[tag],
+            g_log_tag_names[tag],
+            LOG_COLOR_RESET);
 #endif
 
 #ifdef LOG_FUNC

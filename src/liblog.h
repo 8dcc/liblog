@@ -25,18 +25,24 @@
 /*----------------------------------------------------------------------------*/
 /* Settings */
 
-/* Default FILE* when logging */
+/*
+ * Default FILE* when logging.
+ */
 #ifndef LOG_FP
 #define LOG_FP stderr
 #endif
 
-/* NOTE: Comment to disable ASCII colors when logging */
+/*
+ * If defined, use ASCII color escape sequences when logging.
+ */
 #define LOG_COLOR
 
-/* NOTE: Comment to disable logging features */
-/* #define LOG_DATE */
+/*
+ * Each of these macros controls the output of 'log_write'.
+ */
+#define LOG_DATE
 #define LOG_TIME
-#define LOG_TAG
+#define LOG_TAG_NAME
 #define LOG_FUNC
 
 /*----------------------------------------------------------------------------*/
@@ -48,8 +54,6 @@ enum ELogTag {
     LOG_TAG_WRN,
     LOG_TAG_ERR,
     LOG_TAG_FTL,
-
-    LOG_TAGS,
 };
 
 /*----------------------------------------------------------------------------*/

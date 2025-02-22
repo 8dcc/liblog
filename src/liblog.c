@@ -30,7 +30,25 @@
 #define IGNORE_UNUSED(VAR) (void)(VAR)
 
 /*----------------------------------------------------------------------------*/
+/* Private structures */
+
+/*
+ * Structure representing a log file, long with the OR'd tags that should be
+ * written to it.
+ */
+struct LogFile {
+    FILE* fp;
+    enum ELogTag tags;
+};
+
+/*----------------------------------------------------------------------------*/
 /* Private variables */
+
+/*
+ * Internal list of log files, and the current position in the list.
+ */
+static struct LogFile g_log_files[LOG_MAX_FILES];
+static size_t g_log_file_num = 0;
 
 /*
  * List of tag names, used when 'LOG_TAG_NAME' is defined.
@@ -113,12 +131,36 @@ static void log_write_fp(FILE* fp, enum ELogTag tag, const char* func,
 /*----------------------------------------------------------------------------*/
 /* Public functions */
 
+bool log_add_file(FILE* fp, enum ELogTag enabled_tags) {
+    if (g_log_file_num >= LOG_MAX_FILES)
+        return false;
+
+    g_log_files[g_log_file_num].fp   = fp;
+    g_log_files[g_log_file_num].tags = enabled_tags;
+    g_log_file_num++;
+
+    return true;
+}
+
+void log_clear_files(void) {
+    g_log_file_num = 0;
+}
+
 void log_write(enum ELogTag tag, const char* func, const char* fmt, ...) {
     va_list va;
     va_start(va, fmt);
 
-    /* TODO: Iterate private list of FILE pointers */
-    log_write_fp(LOG_FP, tag, func, fmt, va);
+    for (size_t i = 0; i < g_log_file_num; i++) {
+        const struct LogFile log_file = g_log_files[i];
+        if ((log_file.tags & tag) == 0)
+            continue;
+
+        /*
+         * TODO: Specify whether we want to print colors or different components
+         * depending on the file.
+         */
+        log_write_fp(log_file.fp, tag, func, fmt, va);
+    }
 
     va_end(va);
 }

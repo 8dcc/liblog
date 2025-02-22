@@ -96,16 +96,17 @@ bool log_add_file(FILE* fp, enum ELogTag enabled_tags);
  * Forget about all log files that were registered with 'log_add_file'.
  *
  * This function doesn't close any 'FILE', so the caller is responsible for
- * calling something like 'fclose'.  It's usually safer to call this function
+ * calling something like 'fclose'. It's usually safer to call this function
  * before closing the log files.
  */
 void log_clear_files(void);
 
 /*
- * Write the specified log message to all registered log files.
+ * Write the specified (formatted) log message to the relevant log files. These
+ * files should have been registered with 'log_add_file'.
  *
- * Even if the tag name is not printed, this function needs to know which logs
- * it should send the current message.
+ * Note that, even if the tag name is not printed, this function needs to know
+ * which log files are interested in messages with the current tag.
  *
  * This function is not supposed to be called directly, since the 'func'
  * argument is supposed to be set by a macro wrapper.

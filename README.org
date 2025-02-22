@@ -1,25 +1,144 @@
 #+title: liblog
-#+options: toc:nil
-#+startup: showeverything
 #+author: 8dcc
+#+startup: showeverything
 
 *Personal C99 logging library.*
 
-#+TOC: headlines 2
+This simple library provides a way of logging messages with different importance
+levels to multiple files.
 
-* Description
+* Usage example
 
-This simple library consists of a main =log_write= function defined in [[file:src/liblog.c][liblog.c]],
-and the following wrappers:
+Using the library is pretty straight-forward. The process is usually something
+like:
 
-1. =log_dbg=
-2. =log_inf=
-3. =log_wrn=
-4. =log_err=
-5. =log_ftl=
+1. Open the necessary files for logging, using something like [[https://man.cx/fopen(3)][=fopen(3)=]].
+2. Register the files using =log_add_file=, specifying the tags that should be
+   included in that file.
+3. Write the desired log messages using =low_write= or (preferably) one of its
+   wrappers.
+4. After the program is done, clear all registered log files with
+   =log_clear_files=.
+5. Close the files, using something like [[https://man.cx/fclose(3)][=fclose(3)=]].
 
-These macros, defined in [[file:src/liblog.h][liblog.h]], take a variable list of arguments (hence the
-C99 requirement) that must be valid for =printf=.
+Here is a simple example without much error checking. For a more detailed
+explanation of the library's functions, see the [[*Interface][Interface]] specification below.
+
+#+begin_src C
+/* Register the standard error for printing all messages */
+log_add_file(stderr, LOG_TAG_ALL);
+
+/* Open 'error.log' and register it for error and fatal messages */
+FILE* err_file = fopen("error.log", "w");
+log_add_file(err_file, LOG_TAG_AND_ABOVE(LOG_TAG_ERR));
+
+/* Open 'debug.log' and register it for info and debug messages */
+FILE* dbg_file = fopen("debug.log", "w");
+log_add_file(dbg_file, LOG_TAG_AND_BELOW(LOG_TAG_INF));
+
+/* Unrelated tags can be OR'd together */
+FILE* misc_file = fopen("misc.log", "w");
+log_add_file(dbg_file, LOG_TAG_DBG | LOG_TAG_FTL);
+
+/* Write the desired messages. Formats are supported. */
+log_inf("Hello, world!\n");
+log_err("Unexpected value: %p", NULL);
+
+/* We are done, clear the registered files and close them */
+log_clear_files();
+fclose(misc_file);
+fclose(dbg_file);
+fclose(err_file);
+#+end_src
+
+This repository also contains a [[file:src/main.c][full example]] on how this library can be used. Simply
+clone the repository, compile it, and run =liblog-test.out=.
+
+#+begin_src console
+$ git clone https://github.com/8dcc/liblog
+$ cd liblog
+$ make
+$ ./liblog-test.out
+#+end_src
+
+* Interface
+
+The following specification describes how the programmer can interact with this
+library.
+
+** Functions
+
+These are the public functions that the programmer can access when including the
+header.
+
+- Function: log_add_file fp enabled_tags ::
+
+  Register a log file with the specified tags. Returns /true/ if the file was
+  registered successfully.
+
+  Whenever the =log_write= function is called, it will write the relevant
+  information to all log files that are registered with that specific tag.
+
+  Multiple log tags from the =ELogTag= enum can be OR'd together for the
+  =enabled_tags= argument.
+
+- Function: log_clear_files ::
+
+  Forget about all log files that were registered with =log_add_file=.
+
+  This function doesn't close any =FILE=, so the caller is responsible for calling
+  something like =fclose=. It's usually safer to call this function before closing
+  the log files.
+
+- Function: log_write tag func fmt ... ::
+
+  Write the specified (formatted) log message to the relevant log files. These
+  files should have been registered with =log_add_file=.
+
+  Note that, even if the tag name is not printed, this function needs to know
+  which log files are interested in messages with the current tag.
+
+  This function is not supposed to be called directly, since the =func= argument
+  is supposed to be set by one of the following macro wrappers:
+
+  1. =log_dbg=
+  2. =log_inf=
+  3. =log_wrn=
+  4. =log_err=
+  5. =log_ftl=
+
+  These macros, defined in [[file:src/liblog.h][liblog.h]], take a variable list of arguments (hence
+  the C99 requirement) that must be valid for =printf=.
+
+** Tag macros
+
+There are currently 5 tags that can be used to represent different logging
+levels based on their importance, defined as a =ELogTag= enum. From lowest to
+highest importance, the are:
+
+1. =LOG_TAG_DBG=: Debug messages.
+2. =LOG_TAG_INF=: Information messages.
+3. =LOG_TAG_WRN=: Warning messages.
+4. =LOG_TAG_ERR=: Error messages.
+5. =LOG_TAG_FTL=: Fatal messages.
+
+There is also a =LOG_TAG_MAX= macro, corresponding to the tag with the highest
+importance; and a =LOG_TAG_ALL= macro, an integer with all the tag bits set.
+
+Furthermore, the following callable macros can be used to /OR/ multiple tags,
+which can be convenient when calling =log_add_file=, for example.
+
+- Macro: LOG_TAG_AND_BELOW ::
+
+  Return an integer representing the specified flag, along with all inferior
+  ones.
+
+- Macro: LOG_TAG_AND_ABOVE ::
+
+  Return an integer representing the specified flag, along with all superior
+  ones.
+
+* Compile-time features
 
 This library is very modular, and you can enable the features you want by
 defining only the macros you need. The =log_write= function prints the following
@@ -34,17 +153,5 @@ information:
 In addition to these content-related macros, =LOG_COLOR= can be defined to enable
 ASCII color escape sequences when printing.
 
-These =LOG_= macros should be defined in the =log.h= header, or by calling the
+These =LOG_= macros should be defined in the =liblog.h= header, or by calling the
 compiler with =-D...= arguments.
-
-* Building the example
-
-To try the example, simply clone the repository, compile it, and run
-=liblog-test.out=. Please see [[file:src/main.c][main.c]] for an example on how to use it.
-
-#+begin_src console
-$ git clone https://github.com/8dcc/liblog
-$ cd liblog
-$ make
-$ ./liblog-test.out
-#+end_src

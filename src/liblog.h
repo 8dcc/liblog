@@ -110,7 +110,8 @@ void log_clear_files(void);
  * This function is not supposed to be called directly, since the 'func'
  * argument is supposed to be set by a macro wrapper.
  */
-void log_write(enum ELogTag tag, const char* func, const char* fmt, ...);
+void log_write(enum ELogTag tag, const char* func, const char* fmt, ...)
+  __attribute__((format(printf, 3, 4)));
 
 /*
  * Tag wrappers for 'log_write', meant to be called by the user.
